@@ -108,6 +108,7 @@ runs:
           
           echo "::group:: Uploading Assets"
           MAX_SIZE=1000000000 # ~0.93GB
+          UPLOAD_FAILED=0
           
           upload_with_retry() {
             local file=$1
@@ -142,8 +143,8 @@ runs:
             for part in "${FILENAME}".part*; do
               echo "Uploading $part..."
               if ! upload_with_retry "$part"; then
-                echo "::error::Failed to upload part $part after multiple attempts."
-                exit 1
+                echo "::warning::Failed to upload part $part after multiple attempts. Continuing without cache."
+                UPLOAD_FAILED=1
               fi
               rm -f "$part"
             done
@@ -151,8 +152,8 @@ runs:
           else
             echo "Uploading $FILENAME..."
             if ! upload_with_retry "$FILENAME"; then
-              echo "::error::Failed to upload $FILENAME after multiple attempts."
-              exit 1
+              echo "::warning::Failed to upload $FILENAME after multiple attempts. Continuing without cache."
+              UPLOAD_FAILED=1
             fi
             rm -f "$FILENAME"
           fi
@@ -161,6 +162,10 @@ runs:
             echo "Cleaning archive artifacts: ${BASE_FILENAME}*"
           fi
           rm -f "${BASE_FILENAME}"* || true
+
+          if [ "$UPLOAD_FAILED" -eq 1 ]; then
+            echo "::warning::Cache upload failed, but the build is allowed to complete."
+          fi
 
           echo "::endgroup::"
         fi

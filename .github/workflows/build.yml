@@ -295,6 +295,7 @@ jobs:
 
     - name: Save ccache
       uses: ./.github/actions/cache-save
+      continue-on-error: true
       if: inputs.version == 'android12-5.10' || inputs.version == 'android13-5.10' || inputs.version == 'android13-5.15'
       with:
         cache_path: /home/runner/.ccache
@@ -305,6 +306,7 @@ jobs:
 
     - name: Save lto-cache
       uses: ./.github/actions/cache-save
+      continue-on-error: true
       if: inputs.version == 'android12-5.10' || inputs.version == 'android13-5.10' || inputs.version == 'android13-5.15'
       with:
         cache_path: /home/runner/.ld_cache
@@ -315,6 +317,7 @@ jobs:
 
     - name: Save bazel-cache
       uses: ./.github/actions/cache-save
+      continue-on-error: true
       if:  inputs.version == 'android14-5.15' || inputs.version == 'android14-6.1' || inputs.version == 'android15-6.6' || inputs.version == 'android16-6.12'
       with:
         cache_path: /home/runner/.cache/bazel
