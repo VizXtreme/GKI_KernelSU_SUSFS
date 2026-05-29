@@ -295,8 +295,7 @@ jobs:
 
     - name: Save ccache
       uses: ./.github/actions/cache-save
-      continue-on-error: true
-      if: inputs.version == 'android12-5.10' || inputs.version == 'android13-5.10' || inputs.version == 'android13-5.15'
+      if: inputs.version == 'android13-5.10' || inputs.version == 'android13-5.15'
       with:
         cache_path: /home/runner/.ccache
         cache_key: ${{ inputs.android_version }}-${{ inputs.kernel_version }}.${{ steps.extract.outputs.sublevel }}-${{ inputs.os_patch_level }}
@@ -306,8 +305,7 @@ jobs:
 
     - name: Save lto-cache
       uses: ./.github/actions/cache-save
-      continue-on-error: true
-      if: inputs.version == 'android12-5.10' || inputs.version == 'android13-5.10' || inputs.version == 'android13-5.15'
+      if: inputs.version == 'android13-5.10' || inputs.version == 'android13-5.15'
       with:
         cache_path: /home/runner/.ld_cache
         cache_key: ${{ inputs.android_version }}-${{ inputs.kernel_version }}.${{ steps.extract.outputs.sublevel }}-${{ inputs.os_patch_level }}
