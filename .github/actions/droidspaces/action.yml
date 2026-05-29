@@ -70,14 +70,34 @@ runs:
       shell: bash
       working-directory: ${{ github.workspace }}/kernel
       run: |
-        cat >> "${{ github.workspace }}/wild_gki.fragment" << 'EOF'
-        CONFIG_SYSVIPC=y
-        CONFIG_POSIX_MQUEUE=y
-        CONFIG_IPC_NS=y
-        CONFIG_PID_NS=y
-        CONFIG_DEVTMPFS=y
-        CONFIG_BINFMT_MISC=y
-        CONFIG_BINFMT_SCRIPT=y
-        CONFIG_BINFMT_ELF=y
-        EOF
+        if [ "${{ inputs.version }}" = "android12-5.10" ]; then
+          {
+            printf '%s\n' '# DroidSpaces support for Android 12 / 5.10'
+            printf '%s\n' 'CONFIG_SYSVIPC=y'
+            printf '%s\n' 'CONFIG_POSIX_MQUEUE=y'
+            printf '%s\n' 'CONFIG_IPC_NS=y'
+            printf '%s\n' 'CONFIG_PID_NS=y'
+            printf '%s\n' 'CONFIG_DEVTMPFS=y'
+            printf '%s\n' ''
+            printf '%s\n' '# Enhanced NAT and firewall support'
+            printf '%s\n' 'CONFIG_NETFILTER_XT_MATCH_ADDRTYPE=y'
+            printf '%s\n' 'CONFIG_NETFILTER_XT_TARGET_REJECT=y'
+            printf '%s\n' 'CONFIG_NETFILTER_XT_TARGET_LOG=y'
+            printf '%s\n' 'CONFIG_NETFILTER_XT_MATCH_RECENT=y'
+            printf '%s\n' ''
+            printf '%s\n' '# Fail2ban support'
+            printf '%s\n' 'CONFIG_IP_SET=y'
+            printf '%s\n' 'CONFIG_IP_SET_HASH_IP=y'
+            printf '%s\n' 'CONFIG_IP_SET_HASH_NET=y'
+            printf '%s\n' 'CONFIG_NETFILTER_XT_SET=y'
+            printf '%s\n' ''
+            printf '%s\n' '# tmpfs xattr / ACL support'
+            printf '%s\n' 'CONFIG_TMPFS_POSIX_ACL=y'
+            printf '%s\n' 'CONFIG_TMPFS_XATTR=y'
+            printf '%s\n' ''
+            printf '%s\n' 'CONFIG_BINFMT_MISC=y'
+            printf '%s\n' 'CONFIG_BINFMT_SCRIPT=y'
+            printf '%s\n' 'CONFIG_BINFMT_ELF=y'
+          } >> "${{ github.workspace }}/wild_gki.fragment"
+        fi
 
