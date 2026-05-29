@@ -41,6 +41,8 @@ runs:
         GH_TOKEN: ${{ inputs.github_token }}
         TARGET_REPO: "${{ github.repository }}"
       run: |
+        set -euo pipefail
+
         # Archive, Split, and Upload Cache
         if [ "${{ inputs.debug }}" = "true" ]; then set -x; fi
         
@@ -105,35 +107,38 @@ runs:
           echo "::endgroup::"
           
           echo "::group:: Uploading Assets"
-          MAX_SIZE=2000000000 # ~1.86GB
+          MAX_SIZE=1000000000 # ~0.93GB
           
           upload_with_retry() {
             local file=$1
-            local max_attempts=3
+            local max_attempts=5
+            local timeout_duration="30m"
+            local retry_delay=5
             for ((i=1; i<=max_attempts; i++)); do
               echo "  Attempt $i for $file..."
               
               if [ "${{ inputs.debug }}" = "true" ]; then
-                if timeout 10m gh release upload "$TAG_NAME" "$file" --clobber --repo "$TARGET_REPO"; then
+                if timeout "$timeout_duration" gh release upload "$TAG_NAME" "$file" --clobber --repo "$TARGET_REPO"; then
                   echo "  Successfully uploaded $file"
                   return 0
                 fi
               else
-                if timeout 10m gh release upload "$TAG_NAME" "$file" --clobber --repo "$TARGET_REPO" > /dev/null 2>&1; then
+                if timeout "$timeout_duration" gh release upload "$TAG_NAME" "$file" --clobber --repo "$TARGET_REPO" > /dev/null 2>&1; then
                   echo "  Successfully uploaded $file"
                   return 0
                 fi
               fi
               
               echo "  ⚠ Attempt $i failed or timed out. Retrying..."
-              sleep 5
+              sleep "$retry_delay"
+              retry_delay=$((retry_delay * 2))
             done
             return 1
           }
           
           if [ "$FILE_SIZE" -gt "$MAX_SIZE" ]; then
             echo "⚠ File > 2GB. Splitting..."
-            split -b 1500M -a 2 "$FILENAME" "${FILENAME}.part"
+            split -b 750M -a 2 "$FILENAME" "${FILENAME}.part"
             for part in "${FILENAME}".part*; do
               echo "Uploading $part..."
               if ! upload_with_retry "$part"; then
